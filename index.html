@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penguin Detector</title>
+    <title>Penguins of Madagascar Detector</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -67,16 +67,25 @@
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+        .madagascar {
+            text-align: center;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Penguin Species Detector</h1>
+        <h1>Penguins of Madagascar Detector</h1>
+        
+        <div class="madagascar">
+            <p><strong>Searching for Skipper, Private, Rico, and Kowalski in New York City!</strong></p>
+        </div>
         
         <div class="prediction">
             <p>Latest Prediction (Date: 2025-03-19): 
                 <span class="adelie">Adelie</span>
             </p>
+            <p>This could be one of the Penguins of Madagascar!</p>
         </div>
         
         <div class="visualization">
@@ -95,8 +104,8 @@
         
         <div class="stats">
             <h3>Statistics</h3>
-            <p>Total penguins detected: 2</p>
-            <p>Adelie penguins detected: 2 (100.0% of total)</p>
+            <p>Total penguins detected: 3</p>
+            <p>Adelie penguins detected: 1 (33.3% of total)</p>
             <p>Model used: RandomForest</p>
         </div>
         
@@ -106,8 +115,9 @@
                 <tr>
                     <th>Date</th>
                     <th>Species</th>
+                    <th>Adelie?</th>
                 </tr>
-                <tr><td>2025-03-19</td><td>Adelie</td></tr><tr><td>2025-03-19</td><td>Adelie</td></tr>
+                <tr><td>2025-03-19</td><td>Adelie</td><td>No</td></tr><tr><td>2025-03-19</td><td>Adelie</td><td>No</td></tr><tr><td>2025-03-19</td><td>Adelie</td><td>Yes</td></tr>
             </table>
         </div>
     </div>

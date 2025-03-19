@@ -1,6 +1,6 @@
 {
   "date": "2025-03-19",
-  "time": "15:01:54",
+  "time": "15:36:20",
   "penguin_data": {
     "bill_length_mm": 44.02125281740061,
     "bill_depth_mm": 17.225737253195568,
@@ -9,10 +9,13 @@
     "datetime": "2025-04-07T07:59:00+00:00"
   },
   "predicted_species": "Adelie",
-  "probabilities": {
-    "Adelie": 0.64,
-    "Chinstrap": 0.06,
-    "Gentoo": 0.3
+  "species_probabilities": {
+    "Adelie": 0.47,
+    "Chinstrap": 0.28,
+    "Gentoo": 0.25
   },
-  "model_used": "RandomForest"
+  "is_adelie": true,
+  "adelie_probability": 0.32,
+  "model_used": "RandomForest",
+  "note": "This could be one of the Penguins of Madagascar!"
 }

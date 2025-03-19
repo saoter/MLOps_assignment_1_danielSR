@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Simplified model training script that only uses features available in the API.
+Model training script for penguin classification.
+Specifically focused on identifying Adelie penguins for the Penguins of Madagascar project.
 """
 
 import os
@@ -16,7 +17,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, precision_recall_fscore_support
 import xgboost as xgb
 import joblib
 from pathlib import Path
@@ -42,6 +43,7 @@ def load_data_from_db():
 def train_models_with_api_features():
     """
     Train models using only features available in the API.
+    Focus on identifying Adelie penguins accurately.
     """
     # Load data
     df = load_data_from_db()
@@ -53,13 +55,21 @@ def train_models_with_api_features():
     X = df[api_features]
     y = df['species']
     
-    # Encode target labels for XGBoost
+    # Create binary target for Adelie detection
+    y_binary = (y == 'Adelie').astype(int)
+    
+    # Encode target labels for multi-class classification
     label_encoder = LabelEncoder()
     y_encoded = label_encoder.fit_transform(y)
     
-    # Split data
+    # Split data for multi-class problem
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=42, stratify=y
+    )
+    
+    # Split data for binary Adelie detection
+    X_train_binary, X_test_binary, y_train_binary, y_test_binary = train_test_split(
+        X, y_binary, test_size=0.3, random_state=42, stratify=y_binary
     )
     
     # Split encoded target as well (for XGBoost)
@@ -73,7 +83,7 @@ def train_models_with_api_features():
     # Create preprocessing pipeline
     preprocessor = StandardScaler()
     
-    # Define models
+    # Define models for multi-class classification
     models = {
         'RandomForest': {
             'pipeline': Pipeline([
@@ -99,12 +109,37 @@ def train_models_with_api_features():
         }
     }
     
+    # Train binary Adelie detector
+    adelie_detector = Pipeline([
+        ('preprocessor', preprocessor),
+        ('classifier', RandomForestClassifier(random_state=42, n_estimators=200))
+    ])
+    
+    print("\nTraining Adelie penguin detector...")
+    adelie_detector.fit(X_train_binary, y_train_binary)
+    
+    # Evaluate Adelie detector
+    y_pred_binary = adelie_detector.predict(X_test_binary)
+    adelie_accuracy = accuracy_score(y_test_binary, y_pred_binary)
+    
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        y_test_binary, y_pred_binary, average='binary')
+    
+    print(f"Adelie Detector Accuracy: {adelie_accuracy:.4f}")
+    print(f"Adelie Detector Precision: {precision:.4f}")
+    print(f"Adelie Detector Recall: {recall:.4f}")
+    print(f"Adelie Detector F1 Score: {f1:.4f}")
+    
+    # Save Adelie detector
+    Path("models").mkdir(exist_ok=True)
+    joblib.dump(adelie_detector, "models/adelie_detector.pkl")
+    
     best_accuracy = 0
     best_model_name = None
     best_model = None
     model_metrics = {}
     
-    # Train each model
+    # Train each model for species classification
     for model_name, model_info in models.items():
         print(f"\nTraining {model_name}...")
         
@@ -158,23 +193,29 @@ def train_models_with_api_features():
             best_model_name = model_name
             best_model = model
     
-    # Save the best model
-    Path("models").mkdir(exist_ok=True)
-    joblib.dump(best_model, "models/api_model.pkl")
+    # Save the best species classifier model
+    joblib.dump(best_model, "models/best_model.pkl")
     
     # Save model info
     model_info = {
         'model_name': best_model_name,
         'metrics': model_metrics,
         'features_used': api_features,
-        'target_classes': list(label_encoder.classes_)
+        'target_classes': list(label_encoder.classes_),
+        'adelie_detector_metrics': {
+            'accuracy': float(adelie_accuracy),
+            'precision': float(precision),
+            'recall': float(recall),
+            'f1': float(f1)
+        }
     }
     
-    with open("models/api_model_info.json", "w") as f:
+    with open("models/model_metrics.json", "w") as f:
         json.dump(model_info, f, indent=2)
     
-    print(f"\nBest model ({best_model_name}) saved to models/api_model.pkl")
-    print(f"Accuracy: {best_accuracy:.4f}")
+    print(f"\nBest model ({best_model_name}) saved to models/best_model.pkl")
+    print(f"Adelie detector saved to models/adelie_detector.pkl")
+    print(f"Model metrics saved to models/model_metrics.json")
 
 if __name__ == "__main__":
     train_models_with_api_features()
