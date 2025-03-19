@@ -5,10 +5,10 @@ on:
     # - cron: '30 7 * * *'
     - cron: '20 18 * * *'
 
+  
   # Allow manual triggering
   workflow_dispatch:
 
-# This is the critical part - setting proper permissions
 permissions:
   contents: write  # Explicit permission to write to repository contents
 
@@ -19,8 +19,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0  # Fetch complete history for better merging
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -36,28 +34,31 @@ jobs:
       run: |
         python scripts/prediction-api-script.py
     
-    - name: Commit and push results
+    - name: Copy files for GitHub Pages
       run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        
-        # Copy files to root for GitHub Pages
         cp data/predictions/index.html ./index.html || true
         cp data/predictions/latest_visualization.png ./latest_visualization.png || true
         cp data/predictions/latest.json ./latest.json || true
         cp data/predictions/history.json ./history.json || true
         
-        # Stage all changes first before attempting any pull
-        git add -A
+        # Create a .nojekyll file to disable Jekyll processing
+        touch .nojekyll
+    
+    - name: Commit and push
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         
-        # Fetch and merge strategy (alternative to pull --rebase)
-        git fetch origin main
-        git merge --no-edit -X theirs origin/main || true
+        # Add all the files
+        git add .nojekyll || true
+        git add index.html || true
+        git add latest_visualization.png || true
+        git add latest.json || true
+        git add history.json || true
+        git add data/predictions/* || true
         
-        # Commit any changes
-        if [[ -n "$(git status --porcelain)" ]]; then
-          git commit -m "Update daily penguin prediction for $(date +'%Y-%m-%d')"
-          git push -f
-        else
-          echo "No changes to commit"
-        fi
+        # Commit if there are changes
+        git diff --staged --quiet || git commit -m "Update penguin prediction for $(date +'%Y-%m-%d')"
+        
+        # Push changes to GitHub
+        git push || (git pull --rebase && git push)
