@@ -1,0 +1,130 @@
+{
+  "model_name": "RandomForest",
+  "metrics": {
+    "RandomForest": {
+      "accuracy": 1.0,
+      "best_params": {
+        "classifier__max_depth": null,
+        "classifier__min_samples_split": 2,
+        "classifier__n_estimators": 100
+      },
+      "classification_report": {
+        "Adelie": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 44.0
+        },
+        "Chinstrap": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 20.0
+        },
+        "Gentoo": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 36.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        }
+      }
+    },
+    "XGBoost": {
+      "accuracy": 0.99,
+      "best_params": {
+        "classifier__learning_rate": 0.1,
+        "classifier__max_depth": 3,
+        "classifier__n_estimators": 200
+      },
+      "classification_report": {
+        "Adelie": {
+          "precision": 1.0,
+          "recall": 0.9772727272727273,
+          "f1-score": 0.9885057471264368,
+          "support": 44.0
+        },
+        "Chinstrap": {
+          "precision": 0.9523809523809523,
+          "recall": 1.0,
+          "f1-score": 0.975609756097561,
+          "support": 20.0
+        },
+        "Gentoo": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 36.0
+        },
+        "accuracy": 0.99,
+        "macro avg": {
+          "precision": 0.9841269841269842,
+          "recall": 0.9924242424242425,
+          "f1-score": 0.9880385010746658,
+          "support": 100.0
+        },
+        "weighted avg": {
+          "precision": 0.9904761904761905,
+          "recall": 0.99,
+          "f1-score": 0.9900644799551443,
+          "support": 100.0
+        }
+      }
+    }
+  },
+  "feature_importance": [
+    [
+      "feature_0",
+      0.35123617992527817
+    ],
+    [
+      "feature_1",
+      0.1358110797876393
+    ],
+    [
+      "feature_2",
+      0.272636329867756
+    ],
+    [
+      "feature_3",
+      0.0737917537363734
+    ],
+    [
+      "feature_4",
+      0.0042954542032731255
+    ],
+    [
+      "feature_5",
+      0.002311778196279657
+    ],
+    [
+      "feature_6",
+      0.07932254149428909
+    ],
+    [
+      "feature_7",
+      0.05997877208045466
+    ],
+    [
+      "feature_8",
+      0.020616110708656602
+    ]
+  ],
+  "target_classes": [
+    "Adelie",
+    "Chinstrap",
+    "Gentoo"
+  ]
+}
