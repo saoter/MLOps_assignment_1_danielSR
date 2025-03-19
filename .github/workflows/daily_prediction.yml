@@ -4,7 +4,7 @@ on:
   schedule:
     # Run at 7:30 AM UTC every day
     # - cron: '30 7 * * *'
-      - cron: '40 17 * * *'
+      - cron: '50 17 * * *'
       
   # Allow manual triggering
   workflow_dispatch:
@@ -39,11 +39,27 @@ jobs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
+        
+        # Pull the latest changes with rebase strategy
+        git pull --rebase
+        
+        # Add the necessary files
         git add data/predictions/latest.json || true
         git add data/predictions/history.json || true
         git add data/predictions/latest_visualization.png || true
+        git add data/predictions/index.html || true
+        
+        # Copy files to root for GitHub Pages
+        cp data/predictions/index.html ./index.html || true
+        cp data/predictions/latest_visualization.png ./latest_visualization.png || true
+        cp data/predictions/latest.json ./latest.json || true
+        cp data/predictions/history.json ./history.json || true
+        
+        # Add root files for GitHub Pages
         git add index.html || true
         git add latest_visualization.png || true
+        git add latest.json || true
+        git add history.json || true
         
         # Check if there are changes to commit
         if [[ -n "$(git status --porcelain)" ]]; then
