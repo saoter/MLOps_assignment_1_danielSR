@@ -122,7 +122,7 @@ The GitHub Actions workflow in `daily_prediction.yml` automates:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-username/penguins-of-madagascar.git
+   git clone https://driisa.github.io/MLOps_assignment_1/
    cd penguins-of-madagascar
    ```
 
