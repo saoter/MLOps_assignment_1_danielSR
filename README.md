@@ -1,6 +1,6 @@
 # Penguins of Madagascar Detector
 
-![Penguins of Madagascar](https://static.wikia.nocookie.net/penguinsofmadagascar/images/f/fd/Penguins.jpeg/revision/latest?cb=20131208125345)
+![Penguins of Madagascar](images/penguins.jpg)
 
 ## Project Overview
 
