@@ -1,76 +1,165 @@
-# Penguin Species Classifier
+# Penguins of Madagascar Detector
 
-A machine learning pipeline that identifies penguin species based on physical measurements. Created for the MLOps 2025 course assignment.
+![Penguins of Madagascar](https://static.wikia.nocookie.net/penguinsofmadagascar/images/f/fd/Penguins.jpeg/revision/latest?cb=20131208125345)
 
 ## Project Overview
 
-This project aims to classify penguin species based on physical measurements to help identify Adelie penguins (like Skipper, Private, Rico, and Kowalski from the "Penguins of Madagascar") spotted in New York City.
+This MLOps project aims to find Skipper, Private, Rico, and Kowalski - the Penguins of Madagascar! These four penguins are Adelie penguins that have escaped to New York City. We're trying to identify them based on physical measurements.
 
-The pipeline:
-1. Processes penguin data into a SQL database
-2. Trains a machine learning model to classify penguin species
-3. Automatically fetches new penguin data daily from an API
-4. Makes predictions and displays results on GitHub Pages
+Our mission is to build a classification system that analyzes penguin measurements (bill length, bill depth, flipper length, and body mass) and identifies whether a detected penguin is an Adelie - potentially one of our Madagascar friends!
+
+Every day at 7:30 AM, the system automatically fetches data about a new penguin spotted in NYC, makes a prediction about its species, and updates the results on our project's GitHub Pages.
+
+## Repository Structure
+
+```
+.
+├── .github
+│   └── workflows
+│       └── daily_prediction.yml    # GitHub Actions workflow for daily predictions
+├── data
+│   ├── predictions                 # Prediction results
+│   │   ├── history.json            # History of all predictions
+│   │   ├── latest.json             # Most recent prediction
+│   │   ├── latest_visualization.png # Visualization of latest prediction
+│   │   └── index.html              # GitHub Pages dashboard
+│   └── penguins.db                 # SQLite database with penguin data
+├── models
+│   ├── adelie_detector.pkl         # Dedicated model for Adelie detection
+│   ├── best_model.pkl              # Best performing species classifier
+│   └── model_metrics.json          # Performance metrics of trained models
+├── scripts
+│   ├── data-processing-script.py   # Data loading and database creation
+│   ├── model-training-script.py    # Model training and evaluation
+│   └── prediction-api-script.py    # Script for making daily predictions
+├── requirements.txt                # Python dependencies
+└── workflow-diagram.mermaid        # Workflow diagram
+```
 
 ## Technical Implementation
 
-### Data Processing
-- Dataset: Palmer Penguins dataset from the Seaborn library
-- Database: SQLite with tables for penguins and islands
-- Processing script: `scripts/data_processing.py`
+### 1. Data Processing (Task 2)
 
-### Model Training
-- Features: bill length, bill depth, flipper length, body mass
-- Target: Penguin species classification
-- Algorithms evaluated: [list algorithms tested]
-- Best performing model: [model name] with [accuracy]
-- Model training script: `scripts/model_training.py`
+The `data-processing-script.py` handles:
+- Loading penguin dataset from seaborn
+- Cleaning data by removing rows with missing values
+- Creating an SQLite database with two tables:
+  - `PENGUINS`: Contains penguin measurements and species
+  - `ISLANDS`: Lookup table for island information
+- Adding appropriate indices for better query performance
 
-### Automated Prediction Pipeline
-- API endpoint: http://130.225.39.127:8000/new_penguin/
-- Schedule: Daily at 7:30 AM
-- GitHub Actions workflow: `.github/workflows/daily_prediction.yml`
-- Results: Published to GitHub Pages at [your-github-pages-url]
+**Database Schema:**
+
+```
+PENGUINS
+- species (TEXT)
+- bill_length_mm (REAL)
+- bill_depth_mm (REAL)
+- flipper_length_mm (REAL)
+- body_mass_g (REAL)
+- sex (TEXT)
+- island_id (INTEGER) - Foreign key
+- animal_id (INTEGER) - Primary key
+
+ISLANDS
+- island_id (INTEGER) - Primary key
+- name (TEXT)
+```
+
+### 2. Model Training (Task 3)
+
+The `model-training-script.py` handles:
+- Loading data from the SQLite database
+- Feature selection using only API-available features: bill length, bill depth, flipper length, and body mass
+- Data preprocessing with StandardScaler
+- Training and evaluating multiple models:
+  - RandomForest classifier for general species classification
+  - XGBoost classifier for general species classification
+  - A dedicated RandomForest classifier optimized specifically for Adelie detection
+- Hyperparameter tuning using GridSearchCV
+- Model evaluation using accuracy, precision, recall, and F1 score
+- Saving the best performing models and their metrics
+
+### 3. Daily Prediction (Task 4)
+
+The `prediction-api-script.py` handles:
+- Fetching new penguin data from the API endpoint: http://130.225.39.127:8000/new_penguin/
+- Loading trained models from disk
+- Making predictions using both the species classifier and Adelie detector
+- Creating visualizations of the prediction results
+- Saving prediction results to JSON files
+- Updating prediction history
+- Generating HTML content for GitHub Pages
+
+### 4. Workflow Automation
+
+The GitHub Actions workflow in `daily_prediction.yml` automates:
+- Running the prediction script daily at 7:30 AM UTC
+- Committing and pushing updated prediction files to the repository
+- Deploying the updated GitHub Pages site
+
+## Technologies Used
+
+- **Python 3.9** - Core programming language
+- **Data Processing & Analysis**:
+  - pandas - Data manipulation
+  - numpy - Numerical operations
+  - seaborn - Data source and visualization
+  - matplotlib - Data visualization
+- **Database**:
+  - SQLite3 - Lightweight database
+- **Machine Learning**:
+  - scikit-learn - Model training and evaluation
+  - XGBoost - Gradient boosting framework
+  - joblib - Model serialization
+- **Web & API**:
+  - requests - API interactions
+- **DevOps & Automation**:
+  - GitHub Actions - Workflow automation
+  - GitHub Pages - Result visualization
 
 ## How to Run
 
-### Setup
-```bash
-# Clone repository
-git clone https://github.com/yourusername/penguin-species-classifier.git
-cd penguin-species-classifier
+1. Clone the repository:
+   ```
+   git clone https://github.com/your-username/penguins-of-madagascar.git
+   cd penguins-of-madagascar
+   ```
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-# Install dependencies
-pip install -r requirements.txt
-```
+3. Run data processing script to create the database:
+   ```
+   python scripts/data-processing-script.py
+   ```
 
-### Data Processing
-```bash
-python scripts/data_processing.py
-```
+4. Train the models:
+   ```
+   python scripts/model-training-script.py
+   ```
 
-### Model Training
-```bash
-python scripts/model_training.py
-```
-
-### Manual Prediction
-```bash
-python scripts/prediction_api.py
-```
+5. Run prediction manually (normally handled by GitHub Actions):
+   ```
+   python scripts/prediction-api-script.py
+   ```
 
 ## Results
 
-The latest penguin species predictions are available at [GitHub Pages URL].
+The project creates a daily updated GitHub Pages site with:
+- Latest penguin species prediction
+- Visualization of the penguin's measurements
+- History of recent predictions
+- Statistics on detected Adelie penguins
 
-## Technologies Used
-- Python 3.10+
-- Pandas for data manipulation
-- Scikit-learn for model training and evaluation
-- SQLite for data storage
-- GitHub Actions for CI/CD and scheduled tasks
-- GitHub Pages for displaying results
+You can view the live results at: https://your-username.github.io/penguins-of-madagascar/
+
+## Contributing
+
+This project was created as part of an MLOps university assignment. Contributions, suggestions, and improvements are welcome!
+
+## License
+
+This project is available under the MIT License.

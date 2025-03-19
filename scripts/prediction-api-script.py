@@ -247,7 +247,6 @@ def create_visualization(prediction_result):
         
         # Save the images
         plt.savefig("data/predictions/latest_visualization.png")
-        plt.savefig("latest_visualization.png")
         print("Visualization saved successfully")
     except Exception as e:
         print(f"Error saving visualization: {e}")
@@ -457,7 +456,7 @@ def update_github_pages():
     
     # Write the HTML content to index.html in the root directory for GitHub Pages
     try:
-        with open("index.html", "w") as f:
+        with open("data/predictions/index.html", "w") as f:
             f.write(html_content)
         print("GitHub Pages content updated")
     except Exception as e:
