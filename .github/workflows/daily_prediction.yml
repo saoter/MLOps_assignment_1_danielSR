@@ -8,8 +8,9 @@ on:
   # Allow manual triggering
   workflow_dispatch:
 
+# This is the critical part - setting proper permissions
 permissions:
-  contents: write  # Add this line to give write permissions
+  contents: write  # Explicit permission to write to repository contents
 
 jobs:
   predict:
@@ -18,8 +19,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -39,11 +38,11 @@ jobs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add data/predictions/latest.json
-        git add data/predictions/history.json
-        git add data/predictions/latest_visualization.png
-        git add index.html
-        git add latest_visualization.png
+        git add data/predictions/latest.json || true
+        git add data/predictions/history.json || true
+        git add data/predictions/latest_visualization.png || true
+        git add index.html || true
+        git add latest_visualization.png || true
         
         # Check if there are changes to commit
         if [[ -n "$(git status --porcelain)" ]]; then
