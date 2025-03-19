@@ -1,4 +1,4 @@
-Copyname: Daily Penguin Prediction
+name: Daily Penguin Prediction
 on:
   schedule:
     # Run at 7:30 AM UTC every day
