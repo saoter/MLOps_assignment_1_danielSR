@@ -21,6 +21,7 @@ from pathlib import Path
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
+from character_matcher import match_character
 
 # Set matplotlib backend to Agg for server environments
 matplotlib.use('Agg')
@@ -155,6 +156,14 @@ def make_prediction(species_model, adelie_model, model_info, penguin_data):
         print(f"WARNING: Inconsistency detected! Species model says {species_prediction}, " + 
               f"Adelie detector says {'Adelie' if is_adelie_specialist else 'Not Adelie'}")
     
+    # Add character matching for Adelie penguins
+    character_match = None
+    if is_adelie:
+        print("Adelie detected! Matching to specific character...")
+        character_match = match_character(penguin_data)
+        print(f"Best character match: {character_match['best_match']['name']} with "
+              f"{character_match['best_match']['probability']:.1f}% probability")
+    
     # Create prediction result
     prediction_result = {
         "date": datetime.now().strftime("%Y-%m-%d"),
@@ -165,27 +174,33 @@ def make_prediction(species_model, adelie_model, model_info, penguin_data):
         "is_adelie": is_adelie,
         "adelie_probability": adelie_probability,
         "model_used": model_info.get("model_name", "Unknown"),
-        "note": "This could be one of the Penguins of Madagascar!" if is_adelie else "Not one of the Penguins of Madagascar"
+        "character_match": character_match if is_adelie else None,
+        "note": f"This is likely {character_match['best_match']['name']} from the Penguins of Madagascar!" if is_adelie else "Not one of the Penguins of Madagascar"
     }
     
     print(f"Prediction: {species_prediction}")
     print(f"Is Adelie: {is_adelie}")
+    if is_adelie:
+        print(f"Character match: {character_match['best_match']['name']}")
     
     return prediction_result
 
 def create_visualization(prediction_result):
-    """Create a visualization of the prediction result.
-    Uses a simpler approach that avoids radar charts and polar coordinates.
-    """
+    """Create a visualization of the prediction result."""
     print("Creating visualization...")
     
     # Extract data
     penguin_data = prediction_result["penguin_data"]
     species = prediction_result["predicted_species"]
     is_adelie = prediction_result["is_adelie"]
+    character_match = prediction_result.get("character_match", None)
     
     # Create figure with subplots (no polar axes)
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+    
+    # Add spy-themed background and styling
+    fig.patch.set_facecolor('#f0f0f0')
+    plt.rcParams['font.family'] = 'monospace'
     
     # 1. Bar chart of measurements in the first subplot
     features = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm/10', 'body_mass_g/100']
@@ -197,9 +212,9 @@ def create_visualization(prediction_result):
     ]
     
     # Create bar chart
-    colors = ['skyblue' if not is_adelie else 'royalblue'] * 4
+    colors = ['#1e3d59' if not is_adelie else '#ff6e40'] * 4
     ax1.bar(features, values, color=colors)
-    ax1.set_title("Penguin Measurements", fontsize=14)
+    ax1.set_title("SUBJECT MEASUREMENTS", fontsize=14, weight='bold')
     ax1.set_ylabel("Value")
     
     # Add actual values as text labels
@@ -209,34 +224,75 @@ def create_visualization(prediction_result):
     # 2. Use the second subplot for the species summary
     ax2.axis('off')  # Turn off axis
     
-    # Penguin info box
-    info_text = f"""
-    PREDICTION SUMMARY:
-    
-    Predicted Species: {species}
-    
-    Is it an Adelie? {"YES! 🐧" if is_adelie else "No 😢"}
-    
-    Measurements:
-    - Bill Length: {penguin_data['bill_length_mm']:.1f} mm
-    - Bill Depth: {penguin_data['bill_depth_mm']:.1f} mm
-    - Flipper Length: {penguin_data['flipper_length_mm']:.1f} mm
-    - Body Mass: {penguin_data['body_mass_g']:.1f} g
-    
-    {prediction_result.get('note', '')}
-    
-    Date: {prediction_result.get('date', '')}
-    """
+    # Penguin info box with spy theme
+    if is_adelie and character_match:
+        best_match = character_match['best_match']
+        info_text = f"""
+        *** TOP SECRET - CLASSIFIED ***
+        
+        SUBJECT IDENTIFIED: {species}
+        IDENTITY MATCH: {best_match['name']} ({best_match['role']})
+        MATCH PROBABILITY: {best_match['probability']:.1f}%
+        
+        KNOWN CATCHPHRASE: "{best_match['catchphrase']}"
+        
+        SKILL SET: {', '.join(best_match['skills'])}
+        
+        CLASSIFIED INTEL: {best_match['classified_info']}
+        
+        PHYSICAL CHARACTERISTICS:
+        - Bill Length: {penguin_data['bill_length_mm']:.1f} mm
+        - Bill Depth: {penguin_data['bill_depth_mm']:.1f} mm
+        - Flipper Length: {penguin_data['flipper_length_mm']:.1f} mm
+        - Body Mass: {penguin_data['body_mass_g']:.1f} g
+        
+        MISSION STATUS: TARGET IDENTIFIED
+        PRIORITY: CAPTURE AND RETURN TO HQ
+        
+        *** EYES ONLY ***
+        """
+    else:
+        info_text = f"""
+        *** FIELD REPORT ***
+        
+        SUBJECT ANALYSIS: {species}
+        
+        MATCH STATUS: NEGATIVE
+        
+        NOT a target of interest.
+        
+        MEASUREMENTS:
+        - Bill Length: {penguin_data['bill_length_mm']:.1f} mm
+        - Bill Depth: {penguin_data['bill_depth_mm']:.1f} mm
+        - Flipper Length: {penguin_data['flipper_length_mm']:.1f} mm
+        - Body Mass: {penguin_data['body_mass_g']:.1f} g
+        
+        RECOMMENDATION: CONTINUE SURVEILLANCE
+        
+        *** END REPORT ***
+        """
     
     # Add text with larger font
-    bg_color = 'lightblue' if is_adelie else 'lightgray'
-    ax2.text(0.1, 0.5, info_text, fontsize=14, 
-             verticalalignment='center',
-             bbox=dict(facecolor=bg_color, alpha=0.5))
+    bg_color = '#f5d76e' if is_adelie else '#dddddd'
+    text_box = ax2.text(0.1, 0.5, info_text, fontsize=12, 
+                  verticalalignment='center', family='monospace',
+                  bbox=dict(facecolor=bg_color, alpha=0.8, boxstyle='round,pad=1', edgecolor='black'))
+    
+    # Add a "CLASSIFIED" stamp for Adelie penguins
+    if is_adelie:
+        classified_text = "CLASSIFIED"
+        ax2.text(0.5, 0.1, classified_text, fontsize=40, alpha=0.5, color='red',
+                ha='center', va='center', rotation=-20,
+                transform=ax2.transAxes)
     
     # Add a global title
-    title_color = 'blue' if is_adelie else 'black'
-    plt.suptitle(f"Penguin Classification Result: {species}", size=18, color=title_color)
+    title_text = "PENGUIN IDENTIFICATION REPORT"
+    title_color = '#ff6e40' if is_adelie else '#1e3d59'
+    plt.suptitle(title_text, size=18, color=title_color, weight='bold')
+    
+    # Add operation date
+    operation_date = prediction_result.get('date', datetime.now().strftime("%Y-%m-%d"))
+    plt.figtext(0.02, 0.02, f"OPERATION DATE: {operation_date}", fontsize=10)
     
     # Save the chart
     plt.tight_layout()
