@@ -12,8 +12,5 @@ joblib>=1.1.0
 # API interactions
 requests>=2.25.0
 
-# Database
-# sqlite3 is part of the Python standard library
-
-# Other
-pathlib>=1.0.0  # Should be part of Python 3.9+, but included for clarity
+# Scheduling
+schedule>=1.1.0
