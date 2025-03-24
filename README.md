@@ -2,7 +2,7 @@
 
 ![Penguins of Madagascar](images/penguins.jpg)
 
-## Project Overview
+## Project Overview OLA
 
 This MLOps project aims to find Skipper, Private, Rico, and Kowalski - the Penguins of Madagascar! These four penguins are Adelie penguins that have escaped to New York City. We're trying to identify them based on physical measurements.
 
