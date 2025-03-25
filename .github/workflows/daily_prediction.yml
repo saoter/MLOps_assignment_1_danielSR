@@ -36,9 +36,12 @@ jobs:
       - name: Run prediction
         run: python scripts/prediction-api-script.py
 
+      - name: Install gettext for envsubst
+        run: sudo apt-get update && sudo apt-get install -y gettext
+
       - name: Update index.html with latest prediction data
         run: |
-          prediction_data=$(cat data/predictions/latest.json)
+          export PREDICTION_DATA=$(cat data/predictions/latest.json)
           envsubst < templates/index.html.template > index.html
 
       - name: Commit and push changes
