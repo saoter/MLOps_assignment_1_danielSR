@@ -130,5 +130,3 @@ def save_prediction_results(prediction_result):
     with open("data/predictions/latest.json", "w") as f:
         json.dump(prediction_result, f, indent=2)
     print
-::contentReference[oaicite:8]{index=8}
- 
