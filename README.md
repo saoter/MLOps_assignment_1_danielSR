@@ -1,3 +1,19 @@
+# DOCKER for our penguin detector
+
+I adjusted starting app to make it simpler and better structured.
+
+I created:
+- **Dockerfile** basic instructions
+- **supervisord** for multpiple processes
+- **scheduler.py** to set when the prediction should start
+- **.gitignore** to set which files should not be copied to docker image 
+
+![Docker](images/doc.jpg)
+
+
+
+
+
 # Penguins of Madagascar Detector
 
 ![Penguins of Madagascar](images/penguins.jpg)
