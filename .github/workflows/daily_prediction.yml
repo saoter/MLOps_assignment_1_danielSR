@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # Explicit permission to write to repository contents
+  contents: write
 
 jobs:
   predict:
@@ -39,9 +39,24 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Export prediction data as environment variables
+      - name: Extract prediction data and set environment variables
         run: |
-          jq -r 'to_entries | .[] | "\(.key | ascii_upcase)=\(.value)"' data/predictions/latest.json >> $GITHUB_ENV
+          PREDICTION_DATE=$(jq -r '.date' data/predictions/latest.json)
+          PREDICTION_TIME=$(jq -r '.time' data/predictions/latest.json)
+          PREDICTED_SPECIES=$(jq -r '.predicted_species' data/predictions/latest.json)
+          PREDICTION_NOTE=$(jq -r '.note' data/predictions/latest.json)
+          BILL_LENGTH=$(jq -r '.penguin_data.bill_length_mm' data/predictions/latest.json)
+          BILL_DEPTH=$(jq -r '.penguin_data.bill_depth_mm' data/predictions/latest.json)
+          FLIPPER_LENGTH=$(jq -r '.penguin_data.flipper_length_mm' data/predictions/latest.json)
+          BODY_MASS=$(jq -r '.penguin_data.body_mass_g' data/predictions/latest.json)
+          echo "PREDICTION_DATE=$PREDICTION_DATE" >> $GITHUB_ENV
+          echo "PREDICTION_TIME=$PREDICTION_TIME" >> $GITHUB_ENV
+          echo "PREDICTED_SPECIES=$PREDICTED_SPECIES" >> $GITHUB_ENV
+          echo "PREDICTION_NOTE=$PREDICTION_NOTE" >> $GITHUB_ENV
+          echo "BILL_LENGTH=$BILL_LENGTH" >> $GITHUB_ENV
+          echo "BILL_DEPTH=$BILL_DEPTH" >> $GITHUB_ENV
+          echo "FLIPPER_LENGTH=$FLIPPER_LENGTH" >> $GITHUB_ENV
+          echo "BODY_MASS=$BODY_MASS" >> $GITHUB_ENV
 
       - name: Generate index.html from template
         run: envsubst < templates/index.html.template > index.html
@@ -49,7 +64,6 @@ jobs:
       - name: Commit and push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add index.html data/predictions/
-          git diff --staged --quiet || git commit -m "Update penguin prediction for $(date +'%Y-%m-%d')"
-          git push || (git pull --rebase && git push)
+          git config --local user.name "github-actions[bot
+::contentReference[oaicite:21]{index=21}
+ 
