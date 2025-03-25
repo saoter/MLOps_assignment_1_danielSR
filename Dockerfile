@@ -4,20 +4,22 @@ FROM python:3.9-slim
 # Set the working directory
 WORKDIR /app
 
-# Copy the application code
-COPY . /app
+# Install necessary system packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gettext \
+    supervisor \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+# Install Python dependencies
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install supervisord
-RUN apt-get update && apt-get install -y supervisor && apt-get clean
-
-# Copy supervisord configuration file
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Copy the application code
+COPY . /app
 
 # Expose the port that the web server will use
 EXPOSE 8000
 
-# Set the entry point to supervisord
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Command to start supervisord
+CMD ["supervisord", "-c", "/app/supervisord.conf"]
