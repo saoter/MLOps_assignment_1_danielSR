@@ -64,6 +64,8 @@ jobs:
       - name: Commit and push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot
-::contentReference[oaicite:21]{index=21}
+          git config --local user.name "github-actions[bot]"
+          git add index.html data/predictions/
+          git diff --staged --quiet || git commit -m "Update penguin prediction for $(date +'%Y-%m-%d')"
+          git push || (git pull --rebase && git push)
  
