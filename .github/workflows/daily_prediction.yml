@@ -34,8 +34,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run prediction
-        run: |
-          python scripts/prediction-api-script.py
+        run: python scripts/prediction-api-script.py
 
       - name: Commit and push prediction results
         run: |
