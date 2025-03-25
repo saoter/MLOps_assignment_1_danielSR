@@ -14,17 +14,18 @@ import pandas as pd
 import joblib
 import matplotlib
 import matplotlib.pyplot as plt
-import seaborn as sns
 from datetime import datetime
 from pathlib import Path
-import schedule
-import time
 
 # Set matplotlib backend to Agg for server environments
 matplotlib.use('Agg')
 
 # API endpoint for new penguin data
 API_URL = "http://130.225.39.127:8000/new_penguin/"
+
+# Define the output directory
+OUTPUT_DIR = Path("data/predictions")
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def fetch_new_penguin_data():
     """Fetch new penguin data from the API."""
@@ -40,18 +41,19 @@ def fetch_new_penguin_data():
         return None
 
 def load_models():
-    """Load the trained models."""
-    print("Loading trained models...")
+    """Load the trained model."""
+    print("Loading trained model...")
     species_model_path = "models/best_model.pkl"
     if not os.path.exists(species_model_path):
-        print(f"Error: Species model file not found at {species_model_path}")
-        return None
+        print(f"Error: Model file not found at {species_model_path}")
+        return None, None
     species_model = joblib.load(species_model_path)
-    try:
-        with open("models/model_metrics.json", "r") as f:
+    model_info_path = "models/model_metrics.json"
+    if os.path.exists(model_info_path):
+        with open(model_info_path, "r") as f:
             model_info = json.load(f)
-        print(f"Using {model_info['model_name']} model for species classification")
-    except:
+        print(f"Using {model_info.get('model_name', 'Unknown')} model for species classification")
+    else:
         model_info = {"model_name": "Unknown"}
         print("Model information not found, using loaded model without additional info")
     return species_model, model_info
@@ -61,9 +63,10 @@ def make_prediction(species_model, model_info, penguin_data):
     print("Making prediction...")
     df = pd.DataFrame([penguin_data])
     required_features = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'body_mass_g']
-    for feature in required_features:
-        if feature not in df.columns:
-            print(f"Warning: Missing required feature {feature}. Using default value.")
+    missing_features = [feature for feature in required_features if feature not in df.columns]
+    if missing_features:
+        print(f"Warning: Missing required features {missing_features}. Using default value 0.")
+        for feature in missing_features:
             df[feature] = 0  # Default value
     extra_columns = set(df.columns) - set(required_features)
     if extra_columns:
@@ -84,7 +87,7 @@ def make_prediction(species_model, model_info, penguin_data):
         "species_probabilities": proba_dict,
         "is_adelie": is_adelie,
         "model_used": model_info.get("model_name", "Unknown"),
-        "note": f"This is likely one of the Penguins of Madagascar!" if is_adelie else "Not one of the Penguins of Madagascar"
+        "note": "This is likely one of the Penguins of Madagascar!" if is_adelie else "Not one of the Penguins of Madagascar"
     }
     print(f"Prediction: {species_prediction}")
     print(f"Is Adelie: {is_adelie}")
@@ -94,39 +97,58 @@ def create_visualization(prediction_result):
     """Create a visualization of the prediction result."""
     print("Creating visualization...")
     penguin_data = prediction_result["penguin_data"]
-    species = prediction_result["predicted_species"]
     is_adelie = prediction_result["is_adelie"]
     fig, ax1 = plt.subplots(figsize=(8, 6))
-    features = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm/10', 'body_mass_g/100']
+    features = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'body_mass_g']
     values = [
         penguin_data['bill_length_mm'],
         penguin_data['bill_depth_mm'],
-        penguin_data['flipper_length_mm'] / 10,  # Scale down for better visualization
-        penguin_data['body_mass_g'] / 100        # Scale down for better visualization
+        penguin_data['flipper_length_mm'],
+        penguin_data['body_mass_g']
     ]
-    colors = ['#1e3d59' if not is_adelie else '#ff6e40'] * 4
+    colors = ['#ff6e40' if is_adelie else '#1e3d59'] * 4
     ax1.bar(features, values, color=colors)
     ax1.set_title("Penguin Measurements", fontsize=14, weight='bold')
     ax1.set_ylabel("Value")
     for i, v in enumerate(values):
         ax1.text(i, v + 0.5, f"{v:.1f}", ha='center')
     plt.tight_layout()
+    visualization_path = OUTPUT_DIR / "latest_visualization.png"
     try:
-        Path("data/predictions").mkdir(parents=True, exist_ok=True)
-        plt.savefig("data/predictions/latest_visualization.png")
-        print("Visualization saved successfully")
+        plt.savefig(visualization_path)
+        print(f"Visualization saved successfully at {visualization_path}")
     except Exception as e:
         print(f"Error saving visualization: {e}")
     plt.close()
 
 def save_prediction_results(prediction_result):
-    """Save prediction results to a file."""
+    """Save prediction results to files."""
     print("Saving prediction results...")
-    Path("data/predictions").mkdir(parents=True, exist_ok=True)
     today = datetime.now().strftime("%Y-%m-%d")
-    prediction_path = f"data/predictions/{today}.json"
-    with open(prediction_path, "w") as f:
-        json.dump(prediction_result, f, indent=2)
-    with open("data/predictions/latest.json", "w") as f:
-        json.dump(prediction_result, f, indent=2)
-    print
+    prediction_path = OUTPUT_DIR / f"{today}.json"
+    latest_path = OUTPUT_DIR / "latest.json"
+    try:
+        with open(prediction_path, "w") as f:
+            json.dump(prediction_result, f, indent=2)
+        with open(latest_path, "w") as f:
+            json.dump(prediction_result, f, indent=2)
+        print(f"Prediction results saved successfully at {prediction_path} and {latest_path}")
+    except Exception as e:
+        print(f"Error saving prediction results: {e}")
+
+def main():
+    penguin_data = fetch_new_penguin_data()
+    if not penguin_data:
+        print("No data fetched. Exiting.")
+        return
+    species_model, model_info = load_models()
+    if not species_model:
+        print("Model loading failed. Exiting.")
+        return
+    prediction_result = make_prediction(species_model, model_info, penguin_data)
+    create_visualization(prediction_result)
+    save_prediction_results(prediction_result)
+    print("Prediction process completed successfully.")
+
+if __name__ == "__main__":
+    main()
