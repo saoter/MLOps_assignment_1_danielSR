@@ -38,10 +38,7 @@ jobs:
 
       - name: Update index.html with latest prediction data
         run: |
-          # Assuming the prediction data is saved in data/predictions/latest.json
           prediction_data=$(cat data/predictions/latest.json)
-          # Use a templating tool or script to inject the prediction data into index.html
-          # For example, using 'envsubst' to replace placeholders in a template
           envsubst < templates/index.html.template > index.html
 
       - name: Commit and push changes
