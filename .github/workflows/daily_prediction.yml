@@ -36,13 +36,15 @@ jobs:
       - name: Run prediction
         run: python scripts/prediction-api-script.py
 
-      - name: Install gettext for envsubst
-        run: sudo apt-get update && sudo apt-get install -y gettext
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Update index.html with latest prediction data
+      - name: Export prediction data as environment variables
         run: |
-          export PREDICTION_DATA=$(cat data/predictions/latest.json)
-          envsubst < templates/index.html.template > index.html
+          jq -r 'to_entries | .[] | "\(.key | ascii_upcase)=\(.value)"' data/predictions/latest.json >> $GITHUB_ENV
+
+      - name: Generate index.html from template
+        run: envsubst < templates/index.html.template > index.html
 
       - name: Commit and push changes
         run: |
