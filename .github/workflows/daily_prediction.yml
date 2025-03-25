@@ -36,10 +36,18 @@ jobs:
       - name: Run prediction
         run: python scripts/prediction-api-script.py
 
-      - name: Commit and push prediction results
+      - name: Update index.html with latest prediction data
+        run: |
+          # Assuming the prediction data is saved in data/predictions/latest.json
+          prediction_data=$(cat data/predictions/latest.json)
+          # Use a templating tool or script to inject the prediction data into index.html
+          # For example, using 'envsubst' to replace placeholders in a template
+          envsubst < templates/index.html.template > index.html
+
+      - name: Commit and push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add data/predictions/
+          git add index.html data/predictions/
           git diff --staged --quiet || git commit -m "Update penguin prediction for $(date +'%Y-%m-%d')"
           git push || (git pull --rebase && git push)
