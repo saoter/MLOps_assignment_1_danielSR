@@ -6,7 +6,7 @@ I created:
 - **Dockerfile** basic instructions
 - **supervisord** for multpiple processes
 - **scheduler.py** to set when the prediction should start
-- **.gitignore** to set which files should not be copied to docker image 
+- **.dockerignore** to set which files should not be copied to docker image 
 
 ![Docker](images/doc.jpg)
 
