@@ -16,6 +16,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from datetime import datetime
 from pathlib import Path
+from jinja2 import Environment, FileSystemLoader
 
 # Set matplotlib backend to Agg for server environments
 matplotlib.use('Agg')
@@ -135,6 +136,26 @@ def save_prediction_results(prediction_result):
         print(f"Prediction results saved successfully at {prediction_path} and {latest_path}")
     except Exception as e:
         print(f"Error saving prediction results: {e}")
+
+def generate_html_report(prediction_result):
+    """Generate an HTML report from the prediction result."""
+    env = Environment(loader=FileSystemLoader('/app/templates'))
+    template = env.get_template('index.html.template')
+    html_content = template.render(
+        PREDICTION_DATE=prediction_result["date"],
+        PREDICTION_TIME=prediction_result["time"],
+        PREDICTED_SPECIES=prediction_result["predicted_species"],
+        BILL_LENGTH=prediction_result["penguin_data"]["bill_length_mm"],
+        BILL_DEPTH=prediction_result["penguin_data"]["bill_depth_mm"],
+        FLIPPER_LENGTH=prediction_result["penguin_data"]["flipper_length_mm"],
+        BODY_MASS=prediction_result["penguin_data"]["body_mass_g"],
+        SEX=prediction_result["penguin_data"].get("sex", "Unknown"),
+        PREDICTION_NOTE=prediction_result["note"]
+    )
+    output_path = OUTPUT_DIR / "index.html"
+    with open(output_path, "w") as f:
+        f.write(html_content)
+    print(f"HTML report generated at {output_path}")
 
 def main():
     penguin_data = fetch_new_penguin_data()
